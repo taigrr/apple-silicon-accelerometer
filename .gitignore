@@ -1,0 +1,4 @@
+sensord
+sensordash
+dist/
+*.log
