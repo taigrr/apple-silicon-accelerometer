@@ -5,32 +5,6 @@ before:
     - go mod tidy
 
 builds:
-  - id: sensord
-    main: ./cmd/sensord
-    binary: sensord
-    env:
-      - CGO_ENABLED=0
-    goos:
-      - darwin
-    goarch:
-      - amd64
-      - arm64
-    ldflags:
-      - -s -w -X main.version={{.Version}}
-
-  - id: sensordash
-    main: ./cmd/sensordash
-    binary: sensordash
-    env:
-      - CGO_ENABLED=0
-    goos:
-      - darwin
-    goarch:
-      - amd64
-      - arm64
-    ldflags:
-      - -s -w -X main.version={{.Version}}
-
   - id: kbpulse
     main: ./cmd/kbpulse
     binary: kbpulse
@@ -45,7 +19,7 @@ builds:
       - -s -w -X main.version={{.Version}}
 
 archives:
-  - format: tar.gz
+  - formats: [tar.gz]
     name_template: >-
       {{ .ProjectName }}_
       {{- .Version }}_
