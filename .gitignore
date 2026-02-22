@@ -1,4 +1,5 @@
-sensord
-sensordash
+/sensord
+/sensordash
+/kbpulse
 dist/
 *.log
