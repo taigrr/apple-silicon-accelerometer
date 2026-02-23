@@ -13,7 +13,6 @@ builds:
     goos:
       - darwin
     goarch:
-      - amd64
       - arm64
     ldflags:
       - -s -w -X main.version={{.Version}}
@@ -26,7 +25,6 @@ builds:
     goos:
       - darwin
     goarch:
-      - amd64
       - arm64
     ldflags:
       - -s -w -X main.version={{.Version}}
@@ -39,7 +37,6 @@ builds:
     goos:
       - darwin
     goarch:
-      - amd64
       - arm64
     ldflags:
       - -s -w -X main.version={{.Version}}
