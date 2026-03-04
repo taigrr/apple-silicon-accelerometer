@@ -26,7 +26,6 @@ var (
 	selAlloc                uintptr
 	selInit                 uintptr
 	selSetBrightnessFade    uintptr
-	selSetBrightness        uintptr
 	selBrightnessForKB      uintptr
 	selEnableAutoBrightness uintptr
 	selSetIdleDimTime       uintptr
@@ -55,7 +54,6 @@ func initRuntime() {
 	selAlloc = sel("alloc")
 	selInit = sel("init")
 	selSetBrightnessFade = sel("setBrightness:fadeSpeed:commit:forKeyboard:")
-	selSetBrightness = sel("setBrightness:forKeyboard:")
 	selBrightnessForKB = sel("brightnessForKeyboard:")
 	selEnableAutoBrightness = sel("enableAutoBrightness:forKeyboard:")
 	selSetIdleDimTime = sel("setIdleDimTime:forKeyboard:")
