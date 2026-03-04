@@ -131,8 +131,6 @@ type ReportCallback func(context uintptr, result int32, sender uintptr, reportTy
 
 // reportCallbackTrampoline is a raw callback that extracts report data and
 // dispatches to registered Go callbacks.
-var activeCallbacks = make(map[uintptr]ReportCallback)
-var nextCallbackID uintptr
 
 // ParseIMUReport extracts 3 int32 XYZ values from a BMI286 IMU report.
 func ParseIMUReport(data []byte) (x, y, z int32) {

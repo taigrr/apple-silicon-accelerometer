@@ -8,7 +8,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"math"
-	"unsafe"
 
 	"golang.org/x/sys/unix"
 )
@@ -267,8 +266,3 @@ func shmUnlink(name string) error {
 
 // shmOpenDarwin and shmUnlinkDarwin use purego to call libc shm_open/shm_unlink.
 // These are defined in shm_cgo_darwin.go.
-
-// Ptr converts an unsafe.Pointer-sized value. Helper for purego calls.
-func ptrToUintptr(p unsafe.Pointer) uintptr {
-	return uintptr(p)
-}

@@ -344,7 +344,7 @@ func render(det *detector.Detector, tStart time.Time, lidAngle float64, lidValid
 
 	// Ambient light
 	sep(" Ambient Light ")
-	if alsRaw != nil && len(alsRaw) >= 44 {
+	if len(alsRaw) >= 44 {
 		lux := math.Float32frombits(binary.LittleEndian.Uint32(alsRaw[40:44]))
 		line(fmt.Sprintf("  %s%.3f%s %slux%s", bwht, lux, rst, dim, rst))
 	} else {
