@@ -2,6 +2,7 @@ package detector
 
 import (
 	"math"
+	"math/rand"
 	"testing"
 )
 
@@ -113,6 +114,25 @@ func TestDetectPeriodicity_NotEnoughData(t *testing.T) {
 	if d.PeriodValid {
 		t.Error("PeriodValid should be false with no data")
 	}
+	if d.ACorrRing != nil {
+		t.Fatalf("ACorrRing = %v, want nil", d.ACorrRing)
+	}
+}
+
+func TestDetectPeriodicity_ConstantSignalClearsAutocorrelation(t *testing.T) {
+	d := New()
+	for range SampleRate * 3 {
+		d.Waveform.Push(0.25)
+	}
+	d.ACorrRing = []float64{1, 2, 3}
+
+	d.DetectPeriodicity()
+	if d.PeriodValid {
+		t.Fatal("PeriodValid should be false for constant input")
+	}
+	if d.ACorrRing != nil {
+		t.Fatalf("ACorrRing = %v, want nil", d.ACorrRing)
+	}
 }
 
 func TestDetectPeriodicity_SinusoidalSignal(t *testing.T) {
@@ -122,7 +142,7 @@ func TestDetectPeriodicity_SinusoidalSignal(t *testing.T) {
 	nSamples := SampleRate * 5
 	for i := range nSamples {
 		tNow := float64(i) / float64(SampleRate)
-		amp := math.Sin(2 * math.Pi * freq * tNow) * 0.01
+		amp := math.Sin(2*math.Pi*freq*tNow) * 0.01
 		d.Process(amp, 0, -1.0, tNow)
 	}
 
@@ -144,6 +164,37 @@ func TestDetectHeartbeat_NotEnoughData(t *testing.T) {
 	d.DetectHeartbeat()
 	if d.HRValid {
 		t.Error("HRValid should be false with no data")
+	}
+	if d.HRBPM != 0 || d.HRConf != 0 {
+		t.Fatalf("expected heartbeat outputs to reset, got BPM=%f conf=%f", d.HRBPM, d.HRConf)
+	}
+}
+
+func TestDetectHeartbeat_ConstantSignalInvalidatesResult(t *testing.T) {
+	d := New()
+	for range SampleRate * 6 {
+		d.hrBuf.Push(0.02)
+	}
+	d.HRValid = true
+	d.HRBPM = 72
+	d.HRConf = 0.9
+
+	d.DetectHeartbeat()
+	if d.HRValid {
+		t.Fatal("HRValid should be false for constant input")
+	}
+}
+
+func TestDetectHeartbeat_LowCorrelationStaysInvalid(t *testing.T) {
+	d := New()
+	rng := rand.New(rand.NewSource(1))
+	for range SampleRate * 10 {
+		d.hrBuf.Push(rng.Float64()*2 - 1)
+	}
+
+	d.DetectHeartbeat()
+	if d.HRValid {
+		t.Fatalf("HRValid = true, want false (BPM=%f conf=%f)", d.HRBPM, d.HRConf)
 	}
 }
 
@@ -168,6 +219,83 @@ func TestDetectHeartbeat_SimulatedPulse(t *testing.T) {
 	// Accept the range 60-200 BPM as "detected something plausible."
 	if d.HRBPM < 60 || d.HRBPM > 200 {
 		t.Errorf("HRBPM = %f, expected in range 60-200", d.HRBPM)
+	}
+}
+
+func TestClassifySeverityThresholds(t *testing.T) {
+	tests := []struct {
+		name       string
+		detections []detection
+		amp        float64
+		wantSev    string
+		wantSym    string
+		wantLabel  string
+	}{
+		{
+			name:       "major shock",
+			detections: []detection{{source: "STA/LTA"}, {source: "CUSUM"}, {source: "PEAK"}, {source: "KURT"}},
+			amp:        0.06,
+			wantSev:    "CHOC_MAJEUR",
+			wantSym:    "★",
+			wantLabel:  "MAJOR",
+		},
+		{
+			name:       "medium shock",
+			detections: []detection{{source: "STA/LTA"}, {source: "CUSUM"}, {source: "PEAK"}},
+			amp:        0.03,
+			wantSev:    "CHOC_MOYEN",
+			wantSym:    "▲",
+			wantLabel:  "shock",
+		},
+		{
+			name:       "micro shock",
+			detections: []detection{{source: "PEAK"}},
+			amp:        0.006,
+			wantSev:    "MICRO_CHOC",
+			wantSym:    "△",
+			wantLabel:  "micro-choc",
+		},
+		{
+			name:       "vibration",
+			detections: []detection{{source: "STA/LTA"}},
+			amp:        0.004,
+			wantSev:    "VIBRATION",
+			wantSym:    "●",
+			wantLabel:  "vibration",
+		},
+		{
+			name:       "light vibration",
+			detections: []detection{{source: "OTHER"}},
+			amp:        0.002,
+			wantSev:    "VIB_LEGERE",
+			wantSym:    "○",
+			wantLabel:  "light-vib",
+		},
+		{
+			name:       "micro vibration",
+			detections: []detection{{source: "OTHER"}},
+			amp:        0.0005,
+			wantSev:    "MICRO_VIB",
+			wantSym:    "·",
+			wantLabel:  "micro-vib",
+		},
+	}
+
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
+			d := New()
+			d.classify(testCase.detections, 123.25, testCase.amp)
+			if len(d.Events) != 1 {
+				t.Fatalf("expected 1 event, got %d", len(d.Events))
+			}
+			event := d.Events[0]
+			if event.Severity != testCase.wantSev || event.Symbol != testCase.wantSym || event.Label != testCase.wantLabel {
+				t.Fatalf("event = %+v, want severity=%s symbol=%s label=%s", event, testCase.wantSev, testCase.wantSym, testCase.wantLabel)
+			}
+			if event.Time.Unix() != 123 || event.Time.Nanosecond() != 250000000 {
+				t.Fatalf("event time = %s, want 123.25s", event.Time)
+			}
+		})
 	}
 }
 
