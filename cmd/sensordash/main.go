@@ -1,3 +1,6 @@
+//go:build darwin
+// +build darwin
+
 // sensordash is a terminal dashboard that reads sensor data from shared
 // memory (written by sensord) and displays live vibration detection,
 // orientation, heartbeat estimation, and environmental sensors.

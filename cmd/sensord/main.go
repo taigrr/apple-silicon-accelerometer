@@ -1,3 +1,6 @@
+//go:build darwin
+// +build darwin
+
 // sensord is a daemon that reads Apple Silicon IMU sensors and writes
 // data to POSIX shared memory ring buffers for consumption by sensordash
 // or other readers.
