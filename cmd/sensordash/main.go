@@ -220,7 +220,7 @@ func render(det *detector.Detector, tStart time.Time, lidAngle float64, lidValid
 				mx = math.Abs(v)
 			}
 		}
-		ds := downsample(wav, gw)
+		ds := renderutil.Downsample(wav, gw)
 		line(fmt.Sprintf("  %s%s%s", grn, renderutil.Sparkline(ds, gw, mx), rst))
 		line(fmt.Sprintf("  %s%.5fg%s%s0g%s", dim, mx, strings.Repeat(" ", gw-22), rst, rst))
 	} else {
