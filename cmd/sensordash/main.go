@@ -20,6 +20,7 @@ import (
 	"github.com/charmbracelet/fang"
 	"github.com/spf13/cobra"
 	"github.com/taigrr/apple-silicon-accelerometer/detector"
+	"github.com/taigrr/apple-silicon-accelerometer/internal/renderutil"
 	"github.com/taigrr/apple-silicon-accelerometer/shm"
 )
 
@@ -27,23 +28,22 @@ var version = "dev"
 
 // ANSI escape codes.
 const (
-	rst     = "\033[0m"
-	bold    = "\033[1m"
-	dim     = "\033[2m"
-	red     = "\033[31m"
-	grn     = "\033[32m"
-	yel     = "\033[33m"
-	cyn     = "\033[36m"
-	bred    = "\033[91m"
-	bwht    = "\033[97m"
-	hideCur = "\033[?25l"
-	showCur = "\033[?25h"
-	altOn   = "\033[?1049h"
-	altOff  = "\033[?1049l"
-	clear   = "\033[2J\033[H"
+	rst     = "\x1b[0m"
+	bold    = "\x1b[1m"
+	dim     = "\x1b[2m"
+	red     = "\x1b[31m"
+	grn     = "\x1b[32m"
+	yel     = "\x1b[33m"
+	cyn     = "\x1b[36m"
+	bred    = "\x1b[91m"
+	bwht    = "\x1b[97m"
+	hideCur = "\x1b[?25l"
+	showCur = "\x1b[?25h"
+	altOn   = "\x1b[?1049h"
+	altOff  = "\x1b[?1049l"
+	clear   = "\x1b[2J\x1b[H"
 
-	width  = 76
-	blocks = " ▁▂▃▄▅▆▇█"
+	width = 76
 )
 
 func main() {
@@ -188,13 +188,13 @@ func render(det *detector.Detector, tStart time.Time, lidAngle float64, lidValid
 	gw := width - 4
 
 	line := func(content string) {
-		vl := visLen(content)
+		vl := renderutil.VisibleLen(content)
 		pad := max(0, width-vl)
 		fmt.Fprintf(&b, "%s│%s%s%s│%s\n", dim, rst, content, strings.Repeat(" ", pad), rst)
 	}
 	sep := func(label string) {
 		if label != "" {
-			rest := width - visLen(label) - 1
+			rest := width - renderutil.VisibleLen(label) - 1
 			fmt.Fprintf(&b, "%s├─%s%s┤%s\n", dim, label, strings.Repeat("─", rest), rst)
 		} else {
 			fmt.Fprintf(&b, "%s├%s┤%s\n", dim, strings.Repeat("─", width), rst)
@@ -220,8 +220,8 @@ func render(det *detector.Detector, tStart time.Time, lidAngle float64, lidValid
 				mx = math.Abs(v)
 			}
 		}
-		ds := downsample(wav, gw)
-		line(fmt.Sprintf("  %s%s%s", grn, sparkline(ds, gw, mx), rst))
+		ds := renderutil.Downsample(wav, gw)
+		line(fmt.Sprintf("  %s%s%s", grn, renderutil.Sparkline(ds, gw, mx), rst))
 		line(fmt.Sprintf("  %s%.5fg%s%s0g%s", dim, mx, strings.Repeat(" ", gw-22), rst, rst))
 	} else {
 		line(fmt.Sprintf("  %swaiting...%s", dim, rst))
@@ -247,9 +247,9 @@ func render(det *detector.Detector, tStart time.Time, lidAngle float64, lidValid
 				}
 			}
 		}
-		line(fmt.Sprintf("  %sX%s %s%s", red, rst, sparkline(downsample(xs, aw), aw, amx), rst))
-		line(fmt.Sprintf("  %sY%s %s%s", grn, rst, sparkline(downsample(ys, aw), aw, amx), rst))
-		line(fmt.Sprintf("  %sZ%s %s%s", cyn, rst, sparkline(downsample(zs, aw), aw, amx), rst))
+		line(fmt.Sprintf("  %sX%s %s%s", red, rst, renderutil.Sparkline(renderutil.Downsample(xs, aw), aw, amx), rst))
+		line(fmt.Sprintf("  %sY%s %s%s", grn, rst, renderutil.Sparkline(renderutil.Downsample(ys, aw), aw, amx), rst))
+		line(fmt.Sprintf("  %sZ%s %s%s", cyn, rst, renderutil.Sparkline(renderutil.Downsample(zs, aw), aw, amx), rst))
 	} else {
 		line(fmt.Sprintf("  %sX%s", dim, rst))
 		line(fmt.Sprintf("  %sY%s", dim, rst))
@@ -260,7 +260,7 @@ func render(det *detector.Detector, tStart time.Time, lidAngle float64, lidValid
 	sep(" RMS trend 10s ")
 	rms := det.RMSTrend.Slice()
 	if len(rms) > 0 {
-		line(fmt.Sprintf("  %s%s%s", yel, sparkline(rms, gw, 0), rst))
+		line(fmt.Sprintf("  %s%s%s", yel, renderutil.Sparkline(rms, gw, 0), rst))
 	} else {
 		line(fmt.Sprintf("  %saccumulating...%s", dim, rst))
 	}
@@ -269,7 +269,7 @@ func render(det *detector.Detector, tStart time.Time, lidAngle float64, lidValid
 	sep(" Detectors ")
 	names := [3]string{"fast", "med ", "slow"}
 	for i := range 3 {
-		sp := sparkline(det.STALTARings[i].Slice(), 25, det.STALTAOn(i)*2)
+		sp := renderutil.Sparkline(det.STALTARings[i].Slice(), 25, det.STALTAOn(i)*2)
 		r := det.STALTALatest[i]
 		thr := det.STALTAOn(i)
 		mark := " "
@@ -300,7 +300,7 @@ func render(det *detector.Detector, tStart time.Time, lidAngle float64, lidValid
 				acCeil = math.Abs(v) * 1.2
 			}
 		}
-		line(fmt.Sprintf("  %s%s%s", cyn, sparkline(det.ACorrRing, gw, acCeil), rst))
+		line(fmt.Sprintf("  %s%s%s", cyn, renderutil.Sparkline(det.ACorrRing, gw, acCeil), rst))
 	} else {
 		line(fmt.Sprintf("  %saccumulating...%s", dim, rst))
 	}
@@ -331,9 +331,9 @@ func render(det *detector.Detector, tStart time.Time, lidAngle float64, lidValid
 	sep(" Orientation ")
 	orient := det.GetOrientation()
 	ow := width - 18
-	line(fmt.Sprintf(" %sRoll %s %s%s%s %+7.1f°", dim, rst, cyn, gauge(orient.Roll, -180, 180, ow), rst, orient.Roll))
-	line(fmt.Sprintf(" %sPitch%s %s%s%s %+7.1f°", dim, rst, cyn, gauge(orient.Pitch, -90, 90, ow), rst, orient.Pitch))
-	line(fmt.Sprintf(" %sYaw  %s %s%s%s %+7.1f°", dim, rst, cyn, gauge(orient.Yaw, -180, 180, ow), rst, orient.Yaw))
+	line(fmt.Sprintf(" %sRoll %s %s%s%s %+7.1f°", dim, rst, cyn, renderutil.Gauge(orient.Roll, -180, 180, ow), rst, orient.Roll))
+	line(fmt.Sprintf(" %sPitch%s %s%s%s %+7.1f°", dim, rst, cyn, renderutil.Gauge(orient.Pitch, -90, 90, ow), rst, orient.Pitch))
+	line(fmt.Sprintf(" %sYaw  %s %s%s%s %+7.1f°", dim, rst, cyn, renderutil.Gauge(orient.Yaw, -180, 180, ow), rst, orient.Yaw))
 	line(fmt.Sprintf(" %sω: %+6.2f  %+6.2f  %+6.2f °/s%s",
 		dim, det.GyroLatest[0], det.GyroLatest[1], det.GyroLatest[2], rst))
 
@@ -377,96 +377,6 @@ func render(det *detector.Detector, tStart time.Time, lidAngle float64, lidValid
 	fmt.Fprintf(&b, "%s└%s┘%s\n", dim, strings.Repeat("─", width), rst)
 
 	return b.String()
-}
-
-func sparkline(data []float64, width int, ceil float64) string {
-	if len(data) == 0 {
-		return strings.Repeat(" ", width)
-	}
-	d := data
-	if len(d) < width {
-		pad := make([]float64, width-len(d))
-		d = append(pad, d...)
-	} else if len(d) > width {
-		d = d[len(d)-width:]
-	}
-	if ceil <= 0 {
-		for _, v := range d {
-			if math.Abs(v) > ceil {
-				ceil = math.Abs(v)
-			}
-		}
-	}
-	if ceil <= 0 {
-		ceil = 1
-	}
-	blk := []rune(blocks)
-	var b strings.Builder
-	for _, v := range d {
-		frac := math.Min(1, math.Abs(v)/ceil)
-		idx := min(8, int(frac*8))
-		b.WriteRune(blk[idx])
-	}
-	return b.String()
-}
-
-func gauge(value, vmin, vmax float64, width int) string {
-	rng := vmax - vmin
-	if rng == 0 {
-		rng = 1
-	}
-	t := math.Max(0, math.Min(1, (value-vmin)/rng))
-	pos := int(t * float64(width-1))
-	center := int((0 - vmin) / rng * float64(width-1))
-	bar := make([]rune, width)
-	for i := range bar {
-		bar[i] = '─'
-	}
-	if center >= 0 && center < width {
-		bar[center] = '┼'
-	}
-	bar[max(0, min(width-1, pos))] = '●'
-	return string(bar)
-}
-
-func downsample(data []float64, width int) []float64 {
-	n := len(data)
-	if n <= width {
-		return data
-	}
-	step := float64(n) / float64(width)
-	out := make([]float64, width)
-	for c := range width {
-		si := int(float64(c) * step)
-		ei := int(float64(c+1) * step)
-		mx := data[si]
-		for j := si + 1; j < ei && j < n; j++ {
-			if data[j] > mx {
-				mx = data[j]
-			}
-		}
-		out[c] = mx
-	}
-	return out
-}
-
-func visLen(s string) int {
-	n := 0
-	inEsc := false
-	for _, r := range s {
-		if r == '\033' {
-			inEsc = true
-			continue
-		}
-		if inEsc {
-			if r == 'm' {
-				inEsc = false
-			}
-			continue
-		}
-		n++
-	}
-	return n
 }
 
 func sevColor(sev string) string {
