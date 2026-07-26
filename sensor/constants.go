@@ -16,12 +16,12 @@ const (
 
 // Report format constants for the Bosch BMI286 IMU.
 const (
-	IMUReportLen  = 22   // Accel/gyro report length in bytes
-	IMUDecimation = 8    // Keep 1 in N samples
-	IMUDataOffset = 6    // XYZ payload start offset
-	ALSReportLen  = 122  // ALS report length in bytes
-	LidReportLen  = 3    // Lid angle report length in bytes
-	ReportBufSize = 4096 // HID callback buffer size
+	IMUReportLen     = 22   // Accel/gyro report length in bytes
+	IMUDecimation    = 8    // Keep 1 in N samples
+	IMUDataOffset    = 6    // XYZ payload start offset
+	ALSReportLen     = 122  // ALS report length in bytes
+	LidReportLen     = 3    // Lid angle report length in bytes
+	ReportBufSize    = 4096 // HID callback buffer size
 	ReportIntervalUS = 1000 // Driver report interval in microseconds
 )
 

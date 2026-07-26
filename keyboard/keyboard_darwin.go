@@ -77,7 +77,7 @@ func cls(name string) uintptr {
 
 // Client controls the keyboard backlight via CoreBrightness.
 type Client struct {
-	instance  uintptr
+	instance   uintptr
 	keyboardID uintptr
 }
 

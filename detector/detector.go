@@ -81,37 +81,37 @@ type Detector struct {
 	rmsWindow *RingFloat
 
 	// Events
-	Events     []Event
-	lastEvtT   float64
+	Events   []Event
+	lastEvtT float64
 
 	// Gyro latest
 	GyroLatest [3]float64
 
 	// Mahony AHRS quaternion
-	Q           [4]float64 // w, x, y, z
-	mahonyKP    float64
-	mahonyKI    float64
-	mahonyErrI  [3]float64
-	orientInit  bool
+	Q          [4]float64 // w, x, y, z
+	mahonyKP   float64
+	mahonyKI   float64
+	mahonyErrI [3]float64
+	orientInit bool
 
 	// Heartbeat BCG
-	hrHPAlpha  float64
-	hrLPAlpha  float64
-	hrHPPrevIn float64
+	hrHPAlpha   float64
+	hrLPAlpha   float64
+	hrHPPrevIn  float64
 	hrHPPrevOut float64
-	hrLPPrev   float64
-	hrBuf      *RingFloat
-	HRBPM      float64
-	HRConf     float64
-	HRValid    bool
+	hrLPPrev    float64
+	hrBuf       *RingFloat
+	HRBPM       float64
+	HRConf      float64
+	HRValid     bool
 
 	// Periodicity
-	Period    float64
-	PeriodFreq float64
-	PeriodCV  float64
-	PeriodSTD float64
+	Period      float64
+	PeriodFreq  float64
+	PeriodCV    float64
+	PeriodSTD   float64
 	PeriodValid bool
-	ACorrRing []float64
+	ACorrRing   []float64
 
 	// Internal counters
 	staDec  int
@@ -131,9 +131,9 @@ func New() *Detector {
 		Waveform:    NewRingFloat(n5),
 		WaveformXYZ: NewRingVec3(n5),
 
-		staN:     [3]int{3, 15, 50},
-		ltaN:     [3]int{100, 500, 2000},
-		staLTAOn: [3]float64{3.0, 2.5, 2.0},
+		staN:      [3]int{3, 15, 50},
+		ltaN:      [3]int{100, 500, 2000},
+		staLTAOn:  [3]float64{3.0, 2.5, 2.0},
 		staLTAOff: [3]float64{1.5, 1.3, 1.2},
 
 		cusumK: 0.0005,
@@ -373,7 +373,7 @@ func (d *Detector) DetectPeriodicity() {
 		return
 	}
 
-	minLag := max(5, d.FS/20) // 0.05s
+	minLag := max(5, d.FS/20)    // 0.05s
 	maxLag := min(n/2, d.FS*5/2) // 2.5s
 
 	acorr := make([]float64, 0, maxLag-minLag)
@@ -442,7 +442,7 @@ func (d *Detector) DetectHeartbeat() {
 		return
 	}
 
-	lagLo := int(float64(d.FS) * 0.3) // ~200 BPM
+	lagLo := int(float64(d.FS) * 0.3)         // ~200 BPM
 	lagHi := min(int(float64(d.FS)*1.0), n/2) // ~60 BPM
 	if lagLo >= lagHi {
 		d.HRValid = false

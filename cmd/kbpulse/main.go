@@ -43,7 +43,7 @@ Modes:
   breathe          Smooth breathing animation
   stdin            Stream brightness values from stdin (one float per line)
   off              Turn off the backlight`,
-		Version: version,
+		Version:      version,
 		SilenceUsage: true,
 	}
 

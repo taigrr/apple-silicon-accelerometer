@@ -1,5 +1,8 @@
 # apple-silicon-accelerometer
 
+[![CI](https://github.com/taigrr/apple-silicon-accelerometer/actions/workflows/ci.yml/badge.svg)](https://github.com/taigrr/apple-silicon-accelerometer/actions/workflows/ci.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/taigrr/apple-silicon-accelerometer.svg)](https://pkg.go.dev/github.com/taigrr/apple-silicon-accelerometer)
+
 Go port of [olvvier/apple-silicon-accelerometer](https://github.com/olvvier/apple-silicon-accelerometer) — read accelerometer, gyroscope, ambient light sensor, and lid angle from Apple Silicon MacBooks via IOKit HID.
 
 ## What it does
