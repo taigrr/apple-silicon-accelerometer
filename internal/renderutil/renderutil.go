@@ -8,6 +8,9 @@ import (
 const blocks = " ▁▂▃▄▅▆▇█"
 
 func Sparkline(data []float64, width int, ceil float64) string {
+	if width <= 0 {
+		return ""
+	}
 	if len(data) == 0 {
 		return strings.Repeat(" ", width)
 	}
@@ -39,6 +42,9 @@ func Sparkline(data []float64, width int, ceil float64) string {
 }
 
 func Gauge(value, vmin, vmax float64, width int) string {
+	if width <= 0 {
+		return ""
+	}
 	rng := vmax - vmin
 	if rng == 0 {
 		rng = 1
@@ -58,6 +64,9 @@ func Gauge(value, vmin, vmax float64, width int) string {
 }
 
 func Downsample(data []float64, width int) []float64 {
+	if width <= 0 {
+		return nil
+	}
 	n := len(data)
 	if n <= width {
 		return data
