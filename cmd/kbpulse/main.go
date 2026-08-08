@@ -1,5 +1,4 @@
 //go:build darwin
-// +build darwin
 
 // kbpulse controls Apple Silicon MacBook keyboard backlight brightness.
 // It can set a static level, pulse/breathe, or stream intensity from stdin
