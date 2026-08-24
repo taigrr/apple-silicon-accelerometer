@@ -10,6 +10,9 @@ type RingFloat struct {
 
 // NewRingFloat creates a RingFloat with the given capacity.
 func NewRingFloat(cap int) *RingFloat {
+	if cap < 1 {
+		cap = 1
+	}
 	return &RingFloat{
 		data: make([]float64, cap),
 		cap:  cap,
@@ -62,6 +65,9 @@ type RingVec3 struct {
 
 // NewRingVec3 creates a RingVec3 with the given capacity.
 func NewRingVec3(cap int) *RingVec3 {
+	if cap < 1 {
+		cap = 1
+	}
 	return &RingVec3{
 		data: make([]Vec3, cap),
 		cap:  cap,
