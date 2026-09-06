@@ -4,7 +4,7 @@ go 1.26
 
 require (
 	github.com/charmbracelet/fang v1.0.0
-	github.com/ebitengine/purego v0.10.2
+	github.com/ebitengine/purego v0.11.0
 	github.com/spf13/cobra v1.10.2
 	golang.org/x/sys v0.47.0
 )
