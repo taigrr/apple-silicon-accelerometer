@@ -15,7 +15,7 @@ Reads the Bosch BMI286 IMU and other sensors exposed through Apple's `AppleSPUHI
 ## Requirements
 
 - macOS on Apple Silicon (tested on M-series MacBooks)
-- Go 1.26+
+- Go 1.27+
 - Root privileges for `sensord` (IOKit HID access)
 
 ## Install

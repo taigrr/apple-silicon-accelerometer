@@ -77,6 +77,17 @@ func TestRingFloat_EmptySlice(t *testing.T) {
 	}
 }
 
+func TestRingFloat_NonPositiveCapacity(t *testing.T) {
+	r := NewRingFloat(0)
+	r.Push(1)
+	r.Push(2)
+
+	got := r.Slice()
+	if len(got) != 1 || got[0] != 2 {
+		t.Fatalf("Slice() = %v, want [2]", got)
+	}
+}
+
 func TestRingVec3_PushAndLen(t *testing.T) {
 	r := NewRingVec3(3)
 	if r.Len() != 0 {
@@ -122,5 +133,19 @@ func TestRingVec3_SliceAfterWrap(t *testing.T) {
 	}
 	if got[1].X != 3 {
 		t.Errorf("got[1].X = %f, want 3", got[1].X)
+	}
+}
+
+func TestRingVec3_NonPositiveCapacity(t *testing.T) {
+	r := NewRingVec3(-1)
+	r.Push3(1, 2, 3)
+	r.Push3(4, 5, 6)
+
+	got := r.Slice()
+	if len(got) != 1 {
+		t.Fatalf("expected 1 element, got %d", len(got))
+	}
+	if got[0].X != 4 || got[0].Y != 5 || got[0].Z != 6 {
+		t.Fatalf("Slice() = %+v, want [{4 5 6}]", got)
 	}
 }
