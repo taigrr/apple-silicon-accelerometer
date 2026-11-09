@@ -1,6 +1,7 @@
 module github.com/taigrr/apple-silicon-accelerometer
 
 go 1.27
+
 toolchain go1.27.3
 
 require (
