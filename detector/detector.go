@@ -414,11 +414,13 @@ func (d *Detector) DetectPeriodicity() {
 
 // DetectHeartbeat uses autocorrelation of the bandpassed signal to estimate BPM.
 func (d *Detector) DetectHeartbeat() {
+	// Invalid windows must not retain an estimate from an earlier signal.
+	d.HRValid = false
+	d.HRBPM = 0
+	d.HRConf = 0
+
 	minN := d.FS * 5
 	if d.hrBuf.Len() < minN {
-		d.HRValid = false
-		d.HRBPM = 0
-		d.HRConf = 0
 		return
 	}
 

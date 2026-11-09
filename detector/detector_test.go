@@ -358,3 +358,23 @@ func TestSortedCopy(t *testing.T) {
 		}
 	}
 }
+
+func TestDetectHeartbeatClearsStaleEstimate(t *testing.T) {
+	d := New()
+	for sample := range d.FS * 10 {
+		d.hrBuf.Push(math.Sin(2 * math.Pi * 2 * float64(sample) / float64(d.FS)))
+	}
+	d.DetectHeartbeat()
+	if !d.HRValid || math.Abs(d.HRBPM-120) > 1 || d.HRConf <= 0 {
+		t.Fatalf("expected valid 120 BPM estimate, got valid=%v BPM=%v confidence=%v", d.HRValid, d.HRBPM, d.HRConf)
+	}
+
+	// A full window of constant samples has no heartbeat signal.
+	for range d.FS * 10 {
+		d.hrBuf.Push(0)
+	}
+	d.DetectHeartbeat()
+	if d.HRValid || d.HRBPM != 0 || d.HRConf != 0 {
+		t.Fatalf("stale estimate after signal loss: valid=%v BPM=%v confidence=%v", d.HRValid, d.HRBPM, d.HRConf)
+	}
+}
